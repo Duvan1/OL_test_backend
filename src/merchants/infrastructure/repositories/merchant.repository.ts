@@ -17,18 +17,39 @@ export class MerchantRepository implements IMerchantRepository {
     return this.prisma.merchant.findMany();
   }
 
-  async create(merchantData: any): Promise<Merchant> {
-    return this.prisma.merchant.create({
-      data: merchantData,
+  async findAllPaginated(skip: number, take: number, filters?: any): Promise<Merchant[]> {
+    const where = this.buildWhereClause(filters);
+    return this.prisma.merchant.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { created_at: 'desc' },
     });
   }
 
-  async update(id: number, merchantData: any): Promise<Merchant> {
+  async count(filters?: any): Promise<number> {
+    const where = this.buildWhereClause(filters);
+    return this.prisma.merchant.count({ where });
+  }
+
+  async create(merchantData: Partial<Merchant>): Promise<Merchant> {
+    const now = new Date();
+    return this.prisma.merchant.create({
+      data: {
+        ...merchantData,
+        created_at: now,
+        updated_at: now,
+      } as any,
+    });
+  }
+
+  async update(id: number, merchantData: Partial<Merchant>): Promise<Merchant> {
+    const now = new Date();
     return this.prisma.merchant.update({
       where: { id },
       data: {
         ...merchantData,
-        updated_at: new Date(),
+        updated_at: now,
       },
     });
   }
@@ -37,5 +58,30 @@ export class MerchantRepository implements IMerchantRepository {
     await this.prisma.merchant.delete({
       where: { id },
     });
+  }
+
+  private buildWhereClause(filters?: any) {
+    if (!filters) return {};
+
+    const where: any = {};
+
+    if (filters.name) {
+      where.name = {
+        contains: filters.name,
+        mode: 'insensitive',
+      };
+    }
+
+    if (filters.registration_date) {
+      where.registration_date = {
+        equals: new Date(filters.registration_date),
+      };
+    }
+
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    return where;
   }
 } 

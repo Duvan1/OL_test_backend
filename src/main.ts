@@ -6,17 +6,24 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Configurar CORS
+  // Configuración de CORS
   app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: '*', // En producción, especificar los dominios permitidos
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
-  // Configurar validación global
-  app.useGlobalPipes(new ValidationPipe());
+  // Configuración de validación global
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
 
-  // Configurar Swagger
+  // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('API de Comerciantes')
     .setDescription('API para la gestión de comerciantes y establecimientos')

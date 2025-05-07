@@ -10,12 +10,12 @@ datasource db {
 model Establishment {
   id              Int            @id @default(autoincrement())
   name            String
-  revenue         Float
-  employee_count  Int
   municipality_id Int
   created_at      DateTime       @default(now())
   updated_at      DateTime
   merchant_id     Int
+  employee_count  Int
+  revenue         Float
   merchant        Merchant       @relation(fields: [merchant_id], references: [id])
   municipality    Municipality   @relation(fields: [municipality_id], references: [id])
 
@@ -30,9 +30,9 @@ model Merchant {
   document_number String           @unique
   phone           String
   email           String
-  status          String           @default("ACTIVE")
   created_at      DateTime         @default(now())
   updated_at      DateTime
+  status          String           @default("ACTIVE")
   establishments  Establishment[]
 
   @@map("merchants")

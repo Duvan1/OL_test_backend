@@ -79,7 +79,7 @@ async function main() {
     {
       name: 'Carlos Rodríguez',
       document_type: 'CC',
-      document_number: '5432167890',
+      document_number: '5678901234',
       phone: '3009876543',
       email: 'carlos.rodriguez@email.com',
       status: 'ACTIVE',
