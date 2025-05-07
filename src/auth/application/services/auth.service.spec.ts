@@ -12,7 +12,7 @@ describe('AuthService', () => {
   const mockUser = {
     id: 1,
     email: 'test@example.com',
-    password: 'hashedPassword',
+    password: '$2b$10$testhashedpassword',
     name: 'Test User',
     role: 'Administrador'
   };
@@ -20,6 +20,7 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const mockUserRepository = {
       findByEmail: jest.fn(),
+      update: jest.fn(),
     };
 
     const mockJwtService = {
@@ -53,6 +54,7 @@ describe('AuthService', () => {
     it('should return user object when credentials are valid', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+      jest.spyOn(userRepository, 'update').mockResolvedValue(mockUser);
 
       const result = await service.validateUser('test@example.com', 'password');
       expect(result).toEqual({
@@ -83,6 +85,7 @@ describe('AuthService', () => {
     it('should return access token and user data when credentials are valid', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+      jest.spyOn(userRepository, 'update').mockResolvedValue(mockUser);
 
       const result = await service.login({
         email: 'test@example.com',
