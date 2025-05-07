@@ -52,7 +52,7 @@ describe('AuthService', () => {
   describe('validateUser', () => {
     it('should return user object when credentials are valid', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
 
       const result = await service.validateUser('test@example.com', 'password');
       expect(result).toEqual({
@@ -72,7 +72,7 @@ describe('AuthService', () => {
 
     it('should return null when password is invalid', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
 
       const result = await service.validateUser('test@example.com', 'wrong-password');
       expect(result).toBeNull();
@@ -82,7 +82,7 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should return access token and user data when credentials are valid', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
 
       const result = await service.login({
         email: 'test@example.com',
