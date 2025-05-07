@@ -13,24 +13,25 @@ export class MunicipalitiesService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async findAll(): Promise<string[]> {
+  async findAll(): Promise<{ id: number; name: string }[]> {
     // Intentar obtener del caché
-    const cachedMunicipalities = await this.cacheManager.get<string[]>(this.CACHE_KEY);
+    const cachedMunicipalities = await this.cacheManager.get<{ id: number; name: string }[]>(this.CACHE_KEY);
     if (cachedMunicipalities) {
       return cachedMunicipalities;
     }
 
     // Si no está en caché, obtener de la base de datos
     const municipalities = await this.prisma.municipality.findMany({
-      select: { name: true },
+      select: { 
+        id: true,
+        name: true 
+      },
       orderBy: { name: 'asc' },
     });
 
-    const municipalityNames = municipalities.map(m => m.name);
-
     // Guardar en caché
-    await this.cacheManager.set(this.CACHE_KEY, municipalityNames, this.CACHE_TTL);
+    await this.cacheManager.set(this.CACHE_KEY, municipalities, this.CACHE_TTL);
 
-    return municipalityNames;
+    return municipalities;
   }
 } 

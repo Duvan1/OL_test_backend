@@ -24,7 +24,13 @@ export class MunicipalitiesController {
         success: { type: 'boolean' },
         data: {
           type: 'array',
-          items: { type: 'string' }
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number', example: 1 },
+              name: { type: 'string', example: 'Barranquilla' }
+            }
+          }
         },
         message: { type: 'string' }
       }
