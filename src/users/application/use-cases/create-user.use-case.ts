@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { IUserRepository } from '@users/domain/repositories/user.repository.interface';
-import { User } from '@users/domain/entities/user.entity';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -37,7 +37,12 @@ export class CreateUserUseCase {
       userData.password = await bcrypt.hash(userData.password, salt);
     }
 
-    // Crear el usuario
-    return this.userRepository.create(userData);
+    // Crear el usuario con los campos de fecha correctos
+    const now = new Date();
+    return this.userRepository.create({
+      ...userData,
+      created_at: now,
+      updated_at: now,
+    });
   }
 } 

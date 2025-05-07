@@ -22,6 +22,7 @@
       "@users/*": ["src/users/*"],
       "@merchants/*": ["src/merchants/*"],
       "@establishments/*": ["src/establishments/*"],
+      "@municipalities/*": ["src/municipalities/*"],
       "@shared/*": ["src/shared/*"]
     }
   }

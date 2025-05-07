@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Establishment } from '@establishments/domain/entities/establishment.entity';
+import { EstablishmentController } from './infrastructure/controllers/establishment.controller';
+import { EstablishmentRepository } from './infrastructure/repositories/establishment.repository';
+import { CreateEstablishmentUseCase } from './application/use-cases/create-establishment.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Establishment])],
-  controllers: [],
-  providers: [],
-  exports: [TypeOrmModule]
+  controllers: [EstablishmentController],
+  providers: [
+    EstablishmentRepository,
+    {
+      provide: 'IEstablishmentRepository',
+      useClass: EstablishmentRepository,
+    },
+    CreateEstablishmentUseCase,
+  ],
+  exports: ['IEstablishmentRepository', EstablishmentRepository, CreateEstablishmentUseCase],
 })
 export class EstablishmentsModule {} 

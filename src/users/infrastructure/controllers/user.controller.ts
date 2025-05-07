@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, NotFoundException, Inject } from '@nestjs/common';
 import { CreateUserDto } from '@users/application/dtos/create-user.dto';
 import { CreateUserUseCase } from '@users/application/use-cases/create-user.use-case';
-import { User } from '@users/domain/entities/user.entity';
+import { User } from '@prisma/client';
 import { IUserRepository } from '@users/domain/repositories/user.repository.interface';
 import { JwtAuthGuard } from '@auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/infrastructure/guards/roles.guard';
@@ -44,7 +44,11 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateUserDto: Partial<CreateUserDto>,
   ): Promise<User> {
-    return this.userRepository.update(+id, updateUserDto);
+    const now = new Date();
+    return this.userRepository.update(+id, {
+      ...updateUserDto,
+      updated_at: now,
+    });
   }
 
   @Delete(':id')
