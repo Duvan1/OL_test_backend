@@ -29,7 +29,7 @@ RUN npm run build || (echo "Error en la construcción" && cat /app/npm-debug.log
 
 # Limpiar archivos innecesarios y reinstalar solo dependencias de producción
 RUN rm -rf node_modules && \
-    npm install --only=production --legacy-peer-deps
+    npm install --omit=dev --legacy-peer-deps
 
 # Etapa de producción
 FROM node:20-alpine AS production
