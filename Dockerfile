@@ -12,11 +12,11 @@ COPY prisma ./prisma/
 COPY tsconfig*.json ./
 
 # Limpiar caché y módulos existentes
-RUN rm -rf node_modules package-lock.json && \
+RUN rm -rf node_modules && \
     npm cache clean --force
 
 # Instalar dependencias
-RUN npm ci
+RUN npm install
 
 # Copiar el código fuente
 COPY . .
@@ -27,9 +27,9 @@ RUN npx prisma generate
 # Construir la aplicación
 RUN npm run build
 
-# Limpiar archivos innecesarios
+# Limpiar archivos innecesarios y reinstalar solo dependencias de producción
 RUN rm -rf node_modules && \
-    npm ci --only=production
+    npm install --only=production
 
 # Etapa de producción
 FROM node:20-alpine AS production
