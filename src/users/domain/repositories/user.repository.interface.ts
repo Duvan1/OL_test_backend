@@ -1,4 +1,4 @@
-import { User } from '../entities/user.entity';
+import { User } from '@prisma/client';
 
 export interface IUserRepository {
   findById(id: number): Promise<User | null>;
