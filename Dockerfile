@@ -15,8 +15,8 @@ COPY tsconfig*.json ./
 RUN rm -rf node_modules && \
     npm cache clean --force
 
-# Instalar dependencias
-RUN npm install
+# Instalar dependencias con legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Copiar el código fuente
 COPY . .
@@ -29,7 +29,7 @@ RUN npm run build
 
 # Limpiar archivos innecesarios y reinstalar solo dependencias de producción
 RUN rm -rf node_modules && \
-    npm install --only=production
+    npm install --only=production --legacy-peer-deps
 
 # Etapa de producción
 FROM node:20-alpine AS production
