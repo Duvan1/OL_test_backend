@@ -14,16 +14,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Configurar CORS
+  // Configurar CORS para desarrollo
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', '*'),
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: true, // Permite todas las origenes en desarrollo
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  // Configurar prefijo global
-  app.setGlobalPrefix('api');
+  // Configurar prefijo global solo para rutas que no sean de autenticación
+  app.setGlobalPrefix('api', {
+    exclude: ['/auth/(.*)'],
+  });
 
   // Configurar validación global
   app.useGlobalPipes(
@@ -70,6 +72,8 @@ async function bootstrap() {
 
   const port = configService.get('PORT', 3000);
   await app.listen(port);
-  console.log(`Servidor iniciado en: ${await app.getUrl()}`);
+  const url = await app.getUrl();
+  console.log(`Servidor iniciado en: ${url}`);
+  console.log(`Documentación Swagger disponible en: ${url}/docs`);
 }
 bootstrap();

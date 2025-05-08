@@ -6,6 +6,7 @@ import { IUserRepository } from '@users/domain/repositories/user.repository.inte
 import { JwtAuthGuard } from '@auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/infrastructure/guards/roles.guard';
 import { Roles } from '@auth/infrastructure/decorators/roles.decorator';
+import { UsersService } from '@users/application/services/users.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -13,6 +14,8 @@ export class UserController {
   constructor(
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
+    @Inject('UsersService')
+    private readonly usersService: UsersService,
     private readonly createUserUseCase: CreateUserUseCase,
   ) {}
 
@@ -25,13 +28,13 @@ export class UserController {
   @Get()
   @Roles('Administrador', 'Auxiliar de Registro')
   async findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+    return this.usersService.findAll();
   }
 
   @Get(':id')
   @Roles('Administrador', 'Auxiliar de Registro')
   async findOne(@Param('id') id: string): Promise<User> {
-    const user = await this.userRepository.findById(+id);
+    const user = await this.usersService.findById(+id);
     if (!user) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
@@ -44,16 +47,12 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateUserDto: Partial<CreateUserDto>,
   ): Promise<User> {
-    const now = new Date();
-    return this.userRepository.update(+id, {
-      ...updateUserDto,
-      updated_at: now,
-    });
+    return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
   @Roles('Administrador')
   async remove(@Param('id') id: string): Promise<void> {
-    return this.userRepository.delete(+id);
+    return this.usersService.delete(+id);
   }
 } 
