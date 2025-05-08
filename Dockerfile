@@ -44,6 +44,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
+
+# Hacer el script de inicialización ejecutable
+RUN chmod +x ./scripts/init-db.sh
 
 # Limpiar caché de npm
 RUN npm cache clean --force
@@ -55,5 +59,5 @@ ENV PORT=3000
 # Exponer el puerto
 EXPOSE 3000
 
-# Comando para iniciar la aplicación
-CMD ["npm", "run", "start:prod"] 
+# Script de inicio que ejecuta la inicialización de la base de datos y luego inicia la aplicación
+CMD ["./scripts/init-db.sh"] && ["npm", "run", "start:prod"] 
