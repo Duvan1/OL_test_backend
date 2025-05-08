@@ -4,12 +4,23 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './shared/infrastructure/filters/http-exception.filter';
 import { TransformInterceptor } from './shared/infrastructure/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './shared/infrastructure/interceptors/logging.interceptor';
+import helmet from 'helmet';
+import * as compression from 'compression';
+import { ConfigService } from '@nestjs/config';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Configurar CORS
-  app.enableCors();
+  app.enableCors({
+    origin: configService.get('CORS_ORIGIN', '*'),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   // Configurar prefijo global
   app.setGlobalPrefix('api');
@@ -20,14 +31,24 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
   // Configurar filtro de excepciones global
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Configurar interceptor global
-  app.useGlobalInterceptors(new TransformInterceptor());
+  // Configurar interceptores globales
+  app.useGlobalInterceptors(
+    new TransformInterceptor(),
+    new LoggingInterceptor(),
+  );
+
+  // Configurar middleware de seguridad
+  app.use(helmet());
+  app.use(compression());
 
   // Configurar Swagger
   const config = new DocumentBuilder()
@@ -35,11 +56,20 @@ async function bootstrap() {
     .setDescription('API para la gestión de comerciantes y establecimientos')
     .setVersion('1.0')
     .addBearerAuth()
+    .addTag('auth', 'Autenticación y autorización')
+    .addTag('merchants', 'Gestión de comerciantes')
+    .addTag('establishments', 'Gestión de establecimientos')
+    .addTag('users', 'Gestión de usuarios')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(3000);
-  console.log(`Aplicación corriendo en: ${await app.getUrl()}`);
+  // Configurar límites de tamaño de payload
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+  const port = configService.get('PORT', 3000);
+  await app.listen(port);
+  console.log(`Servidor iniciado en: ${await app.getUrl()}`);
 }
 bootstrap();
