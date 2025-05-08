@@ -25,33 +25,36 @@ export class MerchantRepository implements IMerchantRepository {
   }
 
   async findAll(): Promise<IMerchant[]> {
-    return this.prisma.merchant.findMany({
-      where: {
-        status: 'ACTIVE'
-      },
-      include: {
-        establishments: {
-          include: {
-            municipality: true
-          }
-        }
-      },
-      orderBy: {
-        name: 'asc'
-      }
+    const merchants = await this.prisma.merchant.findMany({
+      where: { status: 'ACTIVE' },
+      include: { establishments: true },
+      orderBy: { name: 'asc' }
     });
+
+    return merchants.map(m => ({
+      ...m,
+      no_establecimientos: m.establishments.length
+    }));
   }
 
   async findAllPaginated(skip: number, take: number, filters?: any): Promise<any[]> {
     const where = this.buildWhereClause(filters);
-    return this.prisma.merchant.findMany({
+    const merchants = await this.prisma.merchant.findMany({
       skip,
       take,
       where,
+      include: {
+        establishments: true
+      },
       orderBy: {
         created_at: 'desc'
       }
     });
+
+    return merchants.map(({ establishments, ...m }) => ({
+      ...m,
+      no_establecimientos: establishments.length
+    }));
   }
 
   async count(filters?: any): Promise<number> {
