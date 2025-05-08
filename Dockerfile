@@ -15,7 +15,7 @@ COPY tsconfig*.json ./
 RUN rm -rf node_modules && \
     npm cache clean --force
 
-# Instalar dependencias con legacy-peer-deps
+# Instalar todas las dependencias (incluyendo dependencias de desarrollo)
 RUN npm install --legacy-peer-deps
 
 # Copiar el código fuente
@@ -24,8 +24,8 @@ COPY . .
 # Generar Prisma Client
 RUN npx prisma generate
 
-# Construir la aplicación con más información de depuración
-RUN npm run build || (echo "Error en la construcción" && cat /app/npm-debug.log && exit 1)
+# Construir la aplicación
+RUN npm run build || (echo "Error en la construcción" && exit 1)
 
 # Limpiar archivos innecesarios y reinstalar solo dependencias de producción
 RUN rm -rf node_modules && \
@@ -42,7 +42,7 @@ RUN apk add --no-cache libc6-compat openssl
 # Copiar archivos necesarios desde la etapa de construcción
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package*.json ./ 
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
 
@@ -60,4 +60,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Script de inicio que ejecuta la inicialización de la base de datos y luego inicia la aplicación
-CMD ["./scripts/init-db.sh"] && ["npm", "run", "start:prod"] 
+CMD ["./scripts/init-db.sh"] && ["npm", "run", "start:prod"]
