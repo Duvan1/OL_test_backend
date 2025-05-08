@@ -22,15 +22,32 @@ export class AppController {
       properties: {
         status: { type: 'string', example: 'ok' },
         timestamp: { type: 'string', example: '2024-03-08T04:02:48.985Z' },
-        uptime: { type: 'number', example: 1234567 }
+        uptime: { type: 'number', example: 1234567 },
+        database: { type: 'string', example: 'connected' }
       }
     }
   })
-  getHealth() {
+  @ApiResponse({
+    status: 503,
+    description: 'Sistema con problemas',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'error' },
+        timestamp: { type: 'string', example: '2024-03-08T04:02:48.985Z' },
+        uptime: { type: 'number', example: 1234567 },
+        database: { type: 'string', example: 'disconnected' }
+      }
+    }
+  })
+  async getHealth() {
+    const dbStatus = await this.appService.checkDatabaseConnection();
+    
     return {
-      status: 'ok',
+      status: dbStatus ? 'ok' : 'error',
       timestamp: new Date().toISOString(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
+      database: dbStatus ? 'connected' : 'disconnected'
     };
   }
 }
