@@ -8,41 +8,41 @@ datasource db {
 }
 
 model Establishment {
-  id              Int            @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   name            String
   municipality_id Int
-  created_at      DateTime       @default(now())
-  updated_at      DateTime
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
   merchant_id     Int
   employee_count  Int
   revenue         Float
-  merchant        Merchant       @relation(fields: [merchant_id], references: [id])
-  municipality    Municipality   @relation(fields: [municipality_id], references: [id])
+  merchant        Merchant     @relation(fields: [merchant_id], references: [id])
+  municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
   @@unique([name, municipality_id])
   @@map("establishments")
 }
 
 model Merchant {
-  id              Int              @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   name            String
   document_type   String
-  document_number String           @unique
+  document_number String          @unique
   phone           String
   email           String
-  created_at      DateTime         @default(now())
-  updated_at      DateTime
-  status          String           @default("ACTIVE")
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  status          String          @default("ACTIVE")
   establishments  Establishment[]
 
   @@map("merchants")
 }
 
 model Municipality {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  created_at     DateTime         @default(now())
-  updated_at     DateTime
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
   establishments Establishment[]
 
   @@map("municipalities")
@@ -55,7 +55,7 @@ model User {
   password   String
   role       String
   created_at DateTime @default(now())
-  updated_at DateTime
+  updated_at DateTime @updatedAt
 
   @@map("users")
 }

@@ -1,11 +1,11 @@
-import { Merchant } from '@prisma/client';
+import { IMerchant } from '../entities/merchant.entity';
 
 export interface IMerchantRepository {
-  findById(id: number): Promise<Merchant | null>;
-  findAll(): Promise<Merchant[]>;
-  findAllPaginated(skip: number, take: number, filters?: any): Promise<Merchant[]>;
+  findById(id: number): Promise<IMerchant | null>;
+  findAll(): Promise<IMerchant[]>;
+  findAllPaginated(skip: number, take: number, filters?: any): Promise<IMerchant[]>;
   count(filters?: any): Promise<number>;
-  create(merchant: Partial<Merchant>): Promise<Merchant>;
-  update(id: number, merchant: Partial<Merchant>): Promise<Merchant>;
+  create(merchantData: Partial<IMerchant>): Promise<IMerchant>;
+  update(id: number, merchantData: Partial<IMerchant>): Promise<IMerchant>;
   delete(id: number): Promise<void>;
 } 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Inject, NotFoundException, Query, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Inject, NotFoundException, Query, Patch, Res, Header } from '@nestjs/common';
 import { JwtAuthGuard } from '@auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/infrastructure/guards/roles.guard';
 import { Roles } from '@auth/infrastructure/decorators/roles.decorator';
@@ -9,6 +9,8 @@ import { UpdateMerchantStatusDto } from '@merchants/application/dtos/update-merc
 import { Merchant } from '@prisma/client';
 import { IMerchantRepository } from '@merchants/domain/repositories/merchant.repository.interface';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Response } from 'express';
+import { MerchantReportService } from '@merchants/application/services/merchant-report.service';
 
 @ApiTags('Comerciantes')
 @Controller('merchants')
@@ -19,6 +21,7 @@ export class MerchantController {
     @Inject('IMerchantRepository')
     private readonly merchantRepository: IMerchantRepository,
     private readonly createMerchantUseCase: CreateMerchantUseCase,
+    private readonly reportService: MerchantReportService,
   ) {}
 
   @Get()
@@ -83,6 +86,46 @@ export class MerchantController {
     };
   }
 
+  @Get('report')
+  @Roles('ADMIN')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename=reporte-comerciantes.csv')
+  @ApiOperation({ summary: 'Generar reporte de comerciantes activos' })
+  @ApiResponse({
+    status: 200,
+    description: 'Reporte generado exitosamente',
+    content: {
+      'text/csv': {
+        schema: {
+          type: 'string',
+          example: 'Nombre|Municipio|Teléfono|Correo|Fecha|Estado|Establecimientos|Ingresos|Empleados\n'
+        }
+      }
+    }
+  })
+  async generateReport(@Res() res: Response) {
+    console.log('Iniciando petición de reporte...');
+    try {
+      console.log('Llamando al servicio de reportes...');
+      const csv = await this.reportService.generateReport();
+      
+      if (csv === 'No hay comerciantes activos para generar el reporte' || 
+          csv === 'Error al procesar los datos de los comerciantes') {
+        console.log('No se encontraron datos para el reporte:', csv);
+        throw new NotFoundException(csv);
+      }
+
+      console.log('Reporte generado exitosamente, enviando respuesta...');
+      res.send(csv);
+    } catch (error) {
+      console.error('Error en generateReport:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException('Error al generar el reporte de comerciantes');
+    }
+  }
+
   @Get(':id')
   @Roles('ADMIN', 'AUXILIAR')
   @ApiOperation({ summary: 'Obtener un comerciante por ID' })
@@ -92,7 +135,11 @@ export class MerchantController {
   })
   @ApiResponse({ status: 404, description: 'Comerciante no encontrado' })
   async findOne(@Param('id') id: string): Promise<Merchant> {
-    const merchant = await this.merchantRepository.findById(parseInt(id));
+    const merchantId = parseInt(id);
+    if (isNaN(merchantId)) {
+      throw new NotFoundException(`ID de comerciante inválido: ${id}`);
+    }
+    const merchant = await this.merchantRepository.findById(merchantId);
     if (!merchant) {
       throw new NotFoundException(`Comerciante con ID ${id} no encontrado`);
     }
