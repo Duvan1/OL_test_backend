@@ -20,7 +20,6 @@ dist
 build
 coverage
 
-<<<<<<< HEAD
 # Archivos de prueba
 test
 __tests__
@@ -31,8 +30,5 @@ jest-*.json
 # Archivos temporales
 *.log
 *.tmp
-=======
-# Archivos del sistema
->>>>>>> db521fafc5fc842a1de41edf7e01866a45f3fd95
 .DS_Store
 Thumbs.db 
