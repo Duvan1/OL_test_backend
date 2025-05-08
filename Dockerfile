@@ -25,7 +25,7 @@ COPY . .
 RUN npx prisma generate
 
 # Construir la aplicación con más información de depuración
-RUN npm run build || (echo "Error en la construcción" && exit 1)
+RUN npm run build || (echo "Error en la construcción" && cat /app/npm-debug.log && exit 1)
 
 # Limpiar archivos innecesarios y reinstalar solo dependencias de producción
 RUN rm -rf node_modules && \
