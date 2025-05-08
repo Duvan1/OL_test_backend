@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Establishment {
+  id              Int          @id @default(autoincrement())
+  name            String
+  municipality_id Int
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  merchant_id     Int
+  employee_count  Int
+  revenue         Float
+  merchant        Merchant     @relation(fields: [merchant_id], references: [id])
+  municipality    Municipality @relation(fields: [municipality_id], references: [id])
+
+  @@unique([name, municipality_id])
+  @@map("establishments")
+}
+
+model Merchant {
+  id              Int             @id @default(autoincrement())
+  name            String
+  document_type   String
+  document_number String          @unique
+  phone           String
+  email           String
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  status          String          @default("ACTIVE")
+  establishments  Establishment[]
+
+  @@map("merchants")
+}
+
+model Municipality {
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  establishments Establishment[]
+
+  @@map("municipalities")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("users")
+}
