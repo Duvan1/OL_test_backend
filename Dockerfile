@@ -6,6 +6,10 @@ WORKDIR /app
 # Instalar dependencias necesarias para Prisma
 RUN apk add --no-cache libc6-compat openssl
 
+# Copiar los scripts necesarios desde la etapa de construcción
+COPY ./scripts /app/scripts
+
+
 # Copiar archivos de configuración
 COPY package*.json ./ 
 COPY prisma ./prisma/
