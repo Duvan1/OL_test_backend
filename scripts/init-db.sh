@@ -1,24 +1,23 @@
-#!/bin/bash
+#!/bin/sh
 
-# Colores para mensajes
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
+echo "🔄 Iniciando script init-db.sh..."
 
-echo -e "${GREEN}Iniciando configuración de la base de datos...${NC}"
-
-# Generar Prisma Client
-echo "Generando Prisma Client..."
-npx prisma generate
-
-# Ejecutar migraciones
-echo "Ejecutando migraciones..."
-npx prisma migrate deploy
-
-# Verificar si hay datos de seed
-if [ -f "prisma/seed.ts" ]; then
-    echo "Ejecutando seed..."
-    npx prisma db seed
+# Verifica que DATABASE_URL está definido
+if [ -z "$DATABASE_URL" ]; then
+  echo "❌ ERROR: La variable DATABASE_URL no está definida."
+  exit 1
 fi
 
-echo -e "${GREEN}¡Configuración de la base de datos completada!${NC}" 
+# Ejecuta migraciones de producción
+echo "📦 Ejecutando migraciones Prisma..."
+npx prisma migrate deploy
+
+# Verifica si las migraciones fallaron
+if [ $? -ne 0 ]; then
+  echo "❌ ERROR: Fallo al ejecutar las migraciones Prisma."
+  exit 1
+fi
+
+# Inicia la aplicación
+echo "🚀 Iniciando la aplicación..."
+exec npm run start

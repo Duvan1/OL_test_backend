@@ -6,7 +6,7 @@ import { HttpExceptionFilter } from './shared/infrastructure/filters/http-except
 import { TransformInterceptor } from './shared/infrastructure/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './shared/infrastructure/interceptors/logging.interceptor';
 import helmet from 'helmet';
-import * as compression from 'compression';
+import compression from 'compression';
 import { ConfigService } from '@nestjs/config';
 import * as express from 'express';
 
@@ -79,5 +79,6 @@ async function bootstrap() {
 
   await app.listen(port);
   console.log(`Aplicación ejecutándose en modo ${nodeEnv} en el puerto ${port}`);
+  console.log(`Documentación Swagger disponible en: http://localhost:${port}/${swaggerPath}`);
 }
 bootstrap();

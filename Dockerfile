@@ -7,9 +7,9 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 
 # Copiar archivos de configuración
-COPY package*.json ./
+COPY package*.json ./ 
 COPY prisma ./prisma/
-COPY tsconfig*.json ./
+COPY tsconfig*.json ./ 
 
 # Limpiar caché y módulos existentes
 RUN rm -rf node_modules && npm cache clean --force
@@ -34,7 +34,7 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Instalar dependencias necesarias para Prisma
+# Instalar dependencias necesarias para Prisma y otras dependencias de producción
 RUN apk add --no-cache libc6-compat openssl
 
 # Copiar archivos necesarios desde la etapa de construcción
@@ -43,6 +43,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
+
+# Instalar Prisma CLI en producción
+RUN npm install prisma --legacy-peer-deps --omit=dev
 
 # Hacer el script de inicialización ejecutable
 RUN chmod +x ./scripts/init-db.sh
