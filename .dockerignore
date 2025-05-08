@@ -16,7 +16,6 @@ yarn-error.log
 !README.md
 
 # Archivos de construcción
-dist
 build
 coverage
 
