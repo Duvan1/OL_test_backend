@@ -13,10 +13,13 @@ import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const nodeEnv = configService.get('app.nodeEnv');
+  const port = configService.get('app.port');
+  const corsOrigin = configService.get('app.cors.origin');
 
-  // Configurar CORS para desarrollo
+  // Configurar CORS según el entorno
   app.enableCors({
-    origin: true, // Permite todas las origenes en desarrollo
+    origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -52,28 +55,23 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
 
-  // Configurar Swagger
-  const config = new DocumentBuilder()
-    .setTitle('API de Comerciantes')
-    .setDescription('API para la gestión de comerciantes y establecimientos')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('auth', 'Autenticación y autorización')
-    .addTag('merchants', 'Gestión de comerciantes')
-    .addTag('establishments', 'Gestión de establecimientos')
-    .addTag('users', 'Gestión de usuarios')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  // Configurar Swagger solo en desarrollo
+  if (nodeEnv === 'development') {
+    const config = new DocumentBuilder()
+      .setTitle('OL API')
+      .setDescription('API para el sistema de OL')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   // Configurar límites de tamaño de payload
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-  const port = configService.get('PORT', 3000);
   await app.listen(port);
-  const url = await app.getUrl();
-  console.log(`Servidor iniciado en: ${url}`);
-  console.log(`Documentación Swagger disponible en: ${url}/docs`);
+  console.log(`Aplicación ejecutándose en modo ${nodeEnv} en el puerto ${port}`);
 }
 bootstrap();
