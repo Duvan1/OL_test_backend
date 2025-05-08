@@ -75,10 +75,7 @@ async function bootstrap() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-  const port = configService.get('PORT', 3000);
   await app.listen(port);
-  const url = await app.getUrl();
-  console.log(`Servidor iniciado en: ${url}`);
-  console.log(`Documentación Swagger disponible en: ${url}/docs`);
+  console.log(`Aplicación ejecutándose en modo ${nodeEnv} en el puerto ${port}`);
 }
 bootstrap();
