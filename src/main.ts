@@ -18,6 +18,8 @@ async function bootstrap() {
   const swaggerVersion = configService.get('SWAGGER_VERSION', '1.0');
   const swaggerPath = configService.get('SWAGGER_PATH', 'docs');
   const corsOrigin = configService.get<string>('CORS_ORIGIN', '*');
+  const port = configService.get<number>('PORT', 3000); // Obteniendo el puerto
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development')
 
   app.enableCors({
     origin: corsOrigin,
