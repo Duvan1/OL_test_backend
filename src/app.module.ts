@@ -10,10 +10,17 @@ import { EstablishmentsModule } from '@establishments/establishments.module';
 import { MunicipalitiesModule } from '@municipalities/municipalities.module';
 import { SharedModule } from '@shared/shared.module';
 import { PrismaService } from './shared/infrastructure/prisma/prisma.service';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath:
+        process.env.NODE_ENV === 'development' ? '.env.development' : undefined,
+      ignoreEnvFile: false,
+    }),
     CacheModule.register({
       isGlobal: true,
       ttl: 3600, // 1 hora en segundos

@@ -13,10 +13,14 @@ import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const swaggerTitle = configService.get('SWAGGER_TITLE', 'API');
+  const swaggerDescription = configService.get('SWAGGER_DESCRIPTION', '');
+  const swaggerVersion = configService.get('SWAGGER_VERSION', '1.0');
+  const swaggerPath = configService.get('SWAGGER_PATH', 'docs');
+  const corsOrigin = configService.get<string>('CORS_ORIGIN', '*');
 
-  // Configurar CORS para desarrollo
   app.enableCors({
-    origin: true, // Permite todas las origenes en desarrollo
+    origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -54,17 +58,18 @@ async function bootstrap() {
 
   // Configurar Swagger
   const config = new DocumentBuilder()
-    .setTitle('API de Comerciantes')
-    .setDescription('API para la gestión de comerciantes y establecimientos')
-    .setVersion('1.0')
+    .setTitle(swaggerTitle)
+    .setDescription(swaggerDescription)
+    .setVersion(swaggerVersion)
     .addBearerAuth()
     .addTag('auth', 'Autenticación y autorización')
     .addTag('merchants', 'Gestión de comerciantes')
     .addTag('establishments', 'Gestión de establecimientos')
     .addTag('users', 'Gestión de usuarios')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup(swaggerPath, app, document);
 
   // Configurar límites de tamaño de payload
   app.use(express.json({ limit: '10mb' }));
