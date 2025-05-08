@@ -4,11 +4,9 @@ import { CreateEstablishmentUseCase } from '@establishments/application/use-case
 import { Establishment } from '@prisma/client';
 import { IEstablishmentRepository } from '@establishments/domain/repositories/establishment.repository.interface';
 import { JwtAuthGuard } from '@auth/infrastructure/guards/jwt-auth.guard';
-import { RolesGuard } from '@auth/infrastructure/guards/roles.guard';
-import { Roles } from '@auth/infrastructure/decorators/roles.decorator';
 
 @Controller('establishments')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class EstablishmentController {
   constructor(
     @Inject('IEstablishmentRepository')
@@ -17,19 +15,16 @@ export class EstablishmentController {
   ) {}
 
   @Post()
-  @Roles('Administrador', 'Auxiliar de Registro')
   async create(@Body() createEstablishmentDto: CreateEstablishmentDto): Promise<Establishment> {
     return this.createEstablishmentUseCase.execute(createEstablishmentDto);
   }
 
   @Get()
-  @Roles('Administrador', 'Auxiliar de Registro')
   async findAll(): Promise<Establishment[]> {
     return this.establishmentRepository.findAll();
   }
 
   @Get(':id')
-  @Roles('Administrador', 'Auxiliar de Registro')
   async findOne(@Param('id') id: string): Promise<Establishment> {
     const establishment = await this.establishmentRepository.findById(+id);
     if (!establishment) {
@@ -39,7 +34,6 @@ export class EstablishmentController {
   }
 
   @Put(':id')
-  @Roles('Administrador')
   async update(
     @Param('id') id: string,
     @Body() updateEstablishmentDto: Partial<CreateEstablishmentDto>,
@@ -52,7 +46,6 @@ export class EstablishmentController {
   }
 
   @Delete(':id')
-  @Roles('Administrador')
   async remove(@Param('id') id: string): Promise<void> {
     return this.establishmentRepository.delete(+id);
   }
