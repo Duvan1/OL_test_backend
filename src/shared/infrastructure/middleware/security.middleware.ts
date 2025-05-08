@@ -6,32 +6,41 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SecurityMiddleware implements NestMiddleware {
-  private readonly limiter = rateLimit({
+  public readonly rateLimitConfig = {
     windowMs: 15 * 60 * 1000, // 15 minutos
     max: 100, // límite de 100 peticiones por ventana
     message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde',
-  });
+    standardHeaders: true,
+    legacyHeaders: false,
+  };
 
-  constructor(private readonly configService: ConfigService) {}
+  private readonly limiter: any;
 
-  use(req: Request, res: Response, next: NextFunction): void {
-    this.setSecurityHeaders(res);
-    this.limiter(req, res, next);
+  constructor(private readonly configService: ConfigService) {
+    this.limiter = rateLimit(this.rateLimitConfig);
   }
 
-  private setSecurityHeaders(res: Response): void {
-    const securityHeaders = {
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'X-XSS-Protection': '1; mode=block',
-      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-      'Content-Security-Policy': "default-src 'self'",
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-    };
-
-    Object.entries(securityHeaders).forEach(([key, value]) => {
-      res.setHeader(key, value);
+  use(req: Request, res: Response, next: NextFunction) {
+    // Aplicar rate limiting
+    this.limiter(req, res, (err: any) => {
+      if (err) {
+        return next(err);
+      }
+      next();
     });
+
+    // Aplicar helmet
+    helmet()(req, res, next);
+
+    // Configurar headers de seguridad
+    this.setSecurityHeaders(res);
+  }
+
+  private setSecurityHeaders(res: Response) {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Content-Security-Policy', "default-src 'self'");
   }
 } 
